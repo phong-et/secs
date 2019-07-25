@@ -1,5 +1,6 @@
-var CryptoJS = require("crypto-js");
-module.exports = {
+const CryptoJS = require("crypto-js");
+const JSEncrypt = require('node-jsencrypt');
+var Utils = {
     Http: {
         URL: {
             QueryString: function (name) {
@@ -37,10 +38,10 @@ module.exports = {
                 mode = "rsa*aes";
                 var key = CryptoJS.lib.WordArray.random(16);
                 aesKey64 = CryptoJS.enc.Base64.stringify(key);
-                localStorage.setItem("aes-key", aesKey64);
+                //localStorage.setItem("aes-key", aesKey64);
             } else {
                 mode = "aes";
-                aesKey64 = localStorage.getItem("aes-key");
+                //aesKey64 = localStorage.getItem("aes-key");
             }
 
             function encrypt(plainText) {
@@ -106,11 +107,14 @@ module.exports = {
                 Send: function (jqAjaxOptions) {
                     this.New(jqAjaxOptions);
                 },
-
+                encryptParams: function (params) {
+                    return this.Encrypt(JSON.stringify(params));
+                },
                 New: function (jqAjaxOptions) {
                     if (destroyed) return false;
                     _self = this;
                     jqAjaxOptions.data = this.Encrypt(JSON.stringify(jqAjaxOptions.data));
+
                     //success wrapper
                     var fn_success = jqAjaxOptions.success;
                     jqAjaxOptions.success = function (rsp) {
@@ -127,6 +131,7 @@ module.exports = {
                         }
                         fn_success(rsp);
                     }
+
                     //error wrapper
                     var fn_error = jqAjaxOptions.error;
                     jqAjaxOptions.error = function (xhr, status, error) {
@@ -138,8 +143,6 @@ module.exports = {
                         }
                         fn_error(xhr, status, errorMsg);
                     }
-                    //return ajax
-                    // return $.ajax(jqAjaxOptions);
                     return $.ajaxQueue(jqAjaxOptions);
                 }
             }
@@ -517,3 +520,4 @@ module.exports = {
         }
     },
 };
+module.exports = Utils
