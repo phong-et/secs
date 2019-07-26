@@ -1,15 +1,30 @@
 
 (function () {
-    // let secs = require('./secs.js')
-    var log = console.log
-    let Utils = require('./Utils.js'),
-        cfg = require('./secs.cfg.js')
-    function login() {
+
+    let rp = require('request-promise'),
+        cheerio = require('cheerio'),
+        cfg = require('./secs.cfg.js'),
+        log = console.log,
+        Utils = require('./Utils.js')
+
+    async function login() {
         var params = { username: cfg.username, password: cfg.password },
             msg = Utils.Http.Message(cfg.pKey),
-            url = cfg.loginUrl,
             encryptedParams = msg.encryptParams(params)
         log(encryptedParams)
+
+        let options = {
+            method: 'POST',
+            url: cfg.loginUrl,
+            headers: cfg.headers,
+            form: encryptedParams,
+            resolveWithFullResponse: true,
+            transform: (body, res) => {
+                return { $: cheerio.load(body), cookies: res.headers['set-cookie'] }
+            },
+        }
+        let response = await rp(options)
+        log(response.$.html())
     }
     login()
 })()
